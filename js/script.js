@@ -1,70 +1,43 @@
 // Busca os produtos na página
 
-const getProductUrl = id => `https://frontend-intern-challenge-api.iurykrieger.now.sh/products?page=${id}`
+const getProductUrl = id => `https://frontend-intern-challenge-api.iurykrieger.now.sh/products?page=${id}`;
 
 // Array de Produtos
-
-
-
-const generateProductPromises = () => Array(6).fill().map( _ => fetch(getProductUrl(1)).then(response => response.json()))
-
-const arrayPromises = generateProductPromises()
-
-let accumulator = ``;
-
-const generateHTML = tproducts => tproducts.map((product, index)=> {
-    
-    console.log(tproducts[index].products[index].name)
-    console.log(index)
-    accumulator += `
-        <li class="card">
-            <img class="card-image" alt="${tproducts[index].products[index].name}" src="${tproducts[index].products[index].image}"/>
-            <h2 class="card-title">${tproducts[index].products[index].name}</h2>
-            <p class="card-subtitle">${tproducts[index].products[index].description}</p>
-
-            <span>De: ${tproducts[index].products[index].oldPrice}</span>
-            <span class="newPrice">Por: ${tproducts[index].products[index].price}</span>
-
-            
-
-            <button class="buy-btn">Comprar</button>
-        </li>
-    `
-
-    if(index == 5) {
-        return accumulator
-    }
-}, "")
+const productsPromise = fetch(getProductUrl(1)).then(response => response.json());
 
 // Gerando HTML com os dados dos produtos
-// const generateHTML = products => products.reduce((accumulator, {name, image, description}) => {
+function generateHTML(products) {
+    let accumulator = "";
 
-//     // console.log({name, image, description})
+    for (product of products) {
+        accumulator += `<li class="card">
+            <img class="card-image" alt="${product.name}" src="${product.image}"/>
+            <h2 class="card-title">${product.name}</h2>
+            <p class="card-subtitle">${product.description}</p>
 
-//     accumulator += `
-//             <li class="card">
-//                 <img class="card-image" alt="${name}" src="${name}"/>
-//                 <h2 class="card-title">${name}</h2>
-//                 <p class="card-subtitle">${name}</p>
+            <span>De: ${product.oldPrice}</span>
+            <span class="newPrice">Por: ${product.price}</span>
 
-//                 <span>De: ${name}</span>
-//                 <span class="newPrice">De: ${name}</span>
+            <button class="buy-btn">Comprar</button>
+        </li>`
+    };
 
-                
+    return accumulator
+};
 
-//                 <button class="buy-btn">Comprar</button>
-//             </li>
-//         `
+// Inserindo HTML dos produtos na página
+function insertProductsIntoPage(productsHTML) {
+    if (productsHTML !== undefined) {
+        const ul = document.querySelector('[data-js="productsContent"]');
+        
+        ul.innerHTML = productsHTML;
+    };
+};
 
-//     return accumulator
-// }, '')
-
-const insertProductsIntoPage = products => {
-    const ul = document.querySelector('[data-js="productsContent"]')
-
-    ul.innerHTML = products;
-}
-
-const productPromises = generateProductPromises()
-
-Promise.all(arrayPromises).then(generateHTML).then(insertProductsIntoPage);
+Promise.resolve(productsPromise).then(response => {
+    const products = response.products
+    // const products = response.products.slice(0, 6)
+    
+    const productsHTML = generateHTML(products);
+    insertProductsIntoPage(productsHTML);
+});
